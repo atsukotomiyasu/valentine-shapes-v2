@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Valentine Shape Card Maker</title>
+
+<style>
+body{
+margin:0;
+font-family:Comic Sans MS,cursive;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#fff0f5;
+}
+
+.controls{display:flex;gap:10px;}
+
+.panel{width:170px;}
+
+h3{margin:5px 0;text-align:center;}
+
+button{margin:3px;padding:6px;width:75px;}
+
+.colorBtn{width:30px;height:30px;border-radius:50%;border:1px solid #333}
+
+canvas{border:3px solid #ccc;background:#ffe6ef;}
+
+#keyboard button{width:32px;}
+
+</style>
+</head>
+
+<body>
+
+<div class="controls">
+
+<div class="panel">
+
+<h3>Shapes</h3>
+<button onclick="addShape('heart')">Heart</button>
+<button onclick="addShape('circle')">Circle</button>
+<button onclick="addShape('square')">Square</button>
+<button onclick="addShape('triangle')">Triangle</button>
+<button onclick="addShape('star')">Star</button>
+<button onclick="addShape('rect')">Rect</button>
+<button onclick="addShape('diamond')">Diamond</button>
+
+<h3>Colors</h3>
+<button class="colorBtn" style="background:red" onclick="setColor('red')"></button>
+<button class="colorBtn" style="background:pink" onclick="setColor('pink')"></button>
+<button class="colorBtn" style="background:purple" onclick="setColor('purple')"></button>
+<button class="colorBtn" style="background:yellow" onclick="setColor('yellow')"></button>
+<button class="colorBtn" style="background:blue" onclick="setColor('blue')"></button>
+<button class="colorBtn" style="background:green" onclick="setColor('green')"></button>
+
+</div>
+
+<canvas id="card" width="420" height="420"></canvas>
+
+<div class="panel">
+
+<h3>Keyboard</h3>
+<div id="keyboard"></div>
+
+<button onclick="addSpace()">SPACE</button>
+<button onclick="backspace()">←</button>
+
+<h3>Selected</h3>
+<button onclick="rotate()">Rotate</button>
+<button onclick="scale(1.2)">Bigger</button>
+<button onclick="scale(0.8)">Smaller</button>
+<button onclick="remove()">Delete</button>
+
+<button onclick="reset()">Reset</button>
+<button onclick="download()">Save</button>
+
+</div>
+
+</div>
+
+<script>
+
+const canvas=document.getElementById("card");
+const ctx=canvas.getContext("2d");
+
+let items=[];
+let color="red";
+let selected=null;
+let dragging=false;
+
+function draw(){
+ctx.clearRect(0,0,420,420);
+ctx.fillStyle="#ffe6ef";
+ctx.fillRect(0,0,420,420);
+
+items.forEach(it=>{
+ctx.save();
+ctx.translate(it.x,it.y);
+ctx.rotate(it.r||0);
+ctx.scale(it.s||1,it.s||1);
+ctx.fillStyle=it.color;
+
+if(it.type=="text"){
+ctx.font="24px Comic Sans MS";
+ctx.textAlign="center";
+ctx.fillText(it.text,0,0);
+}
+
+else{
+ctx.beginPath();
+if(it.type=="circle"){ctx.arc(0,0,25,0,Math.PI*2);}
+if(it.type=="square"){ctx.rect(-25,-25,50,50);}
+if(it.type=="triangle"){ctx.moveTo(0,-25);ctx.lineTo(-25,25);ctx.lineTo(25,25);}
+if(it.type=="diamond"){ctx.moveTo(0,-25);ctx.lineTo(-25,0);ctx.lineTo(0,25);ctx.lineTo(25,0);}
+if(it.type=="rect"){ctx.rect(-35,-20,70,40);}
+if(it.type=="star"){
+for(let i=0;i<5;i++){
+ctx.lineTo(Math.cos((18+i*72)/180*Math.PI)*25,-Math.sin((18+i*72)/180*Math.PI)*25);
+ctx.lineTo(Math.cos((54+i*72)/180*Math.PI)*10,-Math.sin((54+i*72)/180*Math.PI)*10);
+}}
+if(it.type=="heart"){
+ctx.moveTo(0,0);
+ctx.bezierCurveTo(-20,-20,-40,10,0,35);
+ctx.bezierCurveTo(40,10,20,-20,0,0);
+}
+ctx.fill();
+}
+
+if(it===selected){
+ctx.strokeStyle="black";
+ctx.strokeRect(-30,-30,60,60);
+}
+
+ctx.restore();
+});
+}
+
+function addShape(t){
+items.push({type:t,x:210,y:210,color,s:1,r:0});
+draw();
+}
+
+function setColor(c){if(selected)selected.color=c;color=c;draw();}
+
+const keys="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+keys.forEach(k=>{
+let b=document.createElement("button");
+b.innerText=k;
+b.onclick=()=>{items.push({type:"text",text:k,x:210,y:350,color:"#000"});draw();}
+keyboard.appendChild(b);
+});
+
+function addSpace(){items.push({type:"text",text:" ",x:210,y:350,color:"#000"});draw();}
+function backspace(){items.pop();draw();}
+
+function rotate(){if(selected){selected.r+=0.3;draw();}}
+function scale(v){if(selected){selected.s*=v;draw();}}
+function remove(){if(selected){items=items.filter(i=>i!==selected);selected=null;draw();}}
+function reset(){items=[];selected=null;draw();}
+
+canvas.onmousedown=e=>{
+let x=e.offsetX,y=e.offsetY;
+for(let i=items.length-1;i>=0;i--){
+let it=items[i];
+if(Math.abs(it.x-x)<40 && Math.abs(it.y-y)<40){
+selected=it;dragging=true;break;
+}}
+draw();
+};
+
+canvas.onmousemove=e=>{
+if(dragging&&selected){
+selected.x=e.offsetX;
+selected.y=e.offsetY;
+draw();
+}
+};
+
+canvas.onmouseup=()=>dragging=false;
+
+function download(){
+const a=document.createElement("a");
+a.href=canvas.toDataURL();
+a.download="valentine_card.png";
+a.click();
+}
+
+draw();
+
+</script>
+</body>
+</html>
