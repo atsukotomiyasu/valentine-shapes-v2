@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Valentine Shape Card Maker</title>
+
+<style>
+body {
+font-family: Comic Sans MS, cursive;
+text-align:center;
+}
+
+.controls {
+display:flex;
+gap:15px;
+justify-content:center;
+align-items:flex-start;
+}
+
+.left-panel,.right-panel{
+width:160px;
+}
+
+canvas{
+border:2px solid #ccc;
+background:#ffe6ef;
+}
+
+button{
+margin:2px;
+padding:5px;
+}
+
+#keyboard button{
+width:30px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Valentine Shape Card Maker</h2>
+
+<div class="controls">
+
+<div class="left-panel">
+<h3>Shapes</h3>
+<button onclick="addShape('heart')">Heart</button>
+<button onclick="addShape('circle')">Circle</button>
+<button onclick="addShape('square')">Square</button>
+<button onclick="addShape('triangle')">Triangle</button>
+
+<h3>Colors</h3>
+<button onclick="setColor('red')">Red</button>
+<button onclick="setColor('pink')">Pink</button>
+<button onclick="setColor('purple')">Purple</button>
+<button onclick="setColor('yellow')">Yellow</button>
+<button onclick="setColor('blue')">Blue</button>
+<button onclick="setColor('green')">Green</button>
+</div>
+
+<canvas id="card" width="500" height="500"></canvas>
+
+<div class="right-panel">
+
+<h3>Keyboard</h3>
+<div id="keyboard"></div>
+
+<button onclick="addSpace()">SPACE</button>
+<button onclick="backspace()">←</button>
+<button onclick="clearText()">CLEAR</button>
+
+<br><br>
+
+<button onclick="reset()">Reset</button>
+<button onclick="download()">Download</button>
+
+</div>
+</div>
+
+<script>
+const canvas=document.getElementById("card");
+const ctx=canvas.getContext("2d");
+let shapes=[];
+let color="red";
+let text="";
+
+function redraw(){
+ctx.clearRect(0,0,500,500);
+ctx.fillStyle="#ffe6ef";
+ctx.fillRect(0,0,500,500);
+
+shapes.forEach(s=>{
+ctx.fillStyle=s.color;
+if(s.type=="circle"){
+ctx.beginPath();
+ctx.arc(s.x,s.y,30,0,Math.PI*2);
+ctx.fill();
+}
+if(s.type=="square"){
+ctx.fillRect(s.x-30,s.y-30,60,60);
+}
+if(s.type=="triangle"){
+ctx.beginPath();
+ctx.moveTo(s.x,s.y-30);
+ctx.lineTo(s.x-30,s.y+30);
+ctx.lineTo(s.x+30,s.y+30);
+ctx.fill();
+}
+if(s.type=="heart"){
+ctx.beginPath();
+ctx.moveTo(s.x,s.y);
+ctx.bezierCurveTo(s.x-30,s.y-30,s.x-60,s.y+20,s.x,s.y+50);
+ctx.bezierCurveTo(s.x+60,s.y+20,s.x+30,s.y-30,s.x,s.y);
+ctx.fill();
+}
+});
+
+ctx.font="28px Comic Sans MS";
+ctx.fillStyle="#000";
+ctx.fillText(text,40,460);
+}
+
+function addShape(t){
+shapes.push({type:t,x:250,y:250,color});
+redraw();
+}
+
+function setColor(c){color=c;}
+
+const keys="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+const kb=document.getElementById("keyboard");
+keys.forEach(k=>{
+let b=document.createElement("button");
+b.innerText=k;
+b.onclick=()=>{text+=k;redraw();}
+kb.appendChild(b);
+});
+
+function addSpace(){text+=" ";redraw();}
+function backspace(){text=text.slice(0,-1);redraw();}
+function clearText(){text="";redraw();}
+function reset(){shapes=[];text="";redraw();}
+
+function download(){
+const a=document.createElement("a");
+a.href=canvas.toDataURL();
+a.download="card.png";
+a.click();
+}
+</script>
+
+</body>
+</html>
